@@ -1,0 +1,699 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Quan Ly Thu Vien API",
+    "version": "1.0.0",
+    "description": "API tai lieu cho he thong quan ly thu vien."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "Nguoi dung va xac thuc"
+    },
+    {
+      "name": "Products",
+      "description": "Quan ly sach"
+    },
+    {
+      "name": "History Books",
+      "description": "Yeu cau muon sach"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token",
+        "description": "Cookie JWT token duoc set sau login"
+      }
+    },
+    "schemas": {
+      "ApiSuccess": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "UserLoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "UserRegisterRequest": {
+        "type": "object",
+        "required": [
+          "fullName",
+          "phone",
+          "email",
+          "password"
+        ],
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductRequest": {
+        "type": "object",
+        "required": [
+          "nameProduct",
+          "image",
+          "description",
+          "stock",
+          "covertType",
+          "publishYear",
+          "pages",
+          "language",
+          "publisher",
+          "publishingCompany"
+        ],
+        "properties": {
+          "nameProduct": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "covertType": {
+            "type": "string",
+            "enum": [
+              "hard",
+              "soft"
+            ]
+          },
+          "publishYear": {
+            "type": "number"
+          },
+          "pages": {
+            "type": "number"
+          },
+          "language": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "publishingCompany": {
+            "type": "string"
+          }
+        }
+      },
+      "BorrowRequest": {
+        "type": "object",
+        "required": [
+          "bookId",
+          "quantity",
+          "borrowDate",
+          "returnDate",
+          "address"
+        ],
+        "properties": {
+          "bookId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "borrowDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "returnDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/user/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Dang ky tai khoan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dang ky thanh cong"
+          },
+          "400": {
+            "description": "Du lieu khong hop le",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Dang nhap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dang nhap thanh cong"
+          },
+          "401": {
+            "description": "Sai thong tin dang nhap"
+          }
+        }
+      }
+    },
+    "/api/user/auth": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Lay thong tin user dang dang nhap",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thong tin user"
+          },
+          "401": {
+            "description": "Chua dang nhap"
+          }
+        }
+      }
+    },
+    "/api/user/refresh-token": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Lam moi access token bang refresh token cookie",
+        "responses": {
+          "200": {
+            "description": "Refresh thanh cong"
+          },
+          "401": {
+            "description": "Refresh token het han/khong hop le"
+          }
+        }
+      }
+    },
+    "/api/user/logout": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Dang xuat",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dang xuat thanh cong"
+          }
+        }
+      }
+    },
+    "/api/user/forgot-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Gui OTP qua email de dat lai mat khau",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gui OTP thanh cong"
+          },
+          "500": {
+            "description": "Loi gui email"
+          }
+        }
+      }
+    },
+    "/api/user/reset-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Dat lai mat khau voi OTP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "otp",
+                  "newPassword"
+                ],
+                "properties": {
+                  "otp": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dat lai mat khau thanh cong"
+          },
+          "500": {
+            "description": "OTP khong hop le hoac het han"
+          }
+        }
+      }
+    },
+    "/api/product/get-all": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Lay danh sach sach",
+        "responses": {
+          "200": {
+            "description": "Danh sach sach"
+          }
+        }
+      }
+    },
+    "/api/product/get-one": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Lay chi tiet sach theo id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiet sach"
+          },
+          "400": {
+            "description": "ID khong hop le"
+          }
+        }
+      }
+    },
+    "/api/product/search": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Tim kiem sach theo tu khoa",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ket qua tim kiem"
+          }
+        }
+      }
+    },
+    "/api/product/create": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Tao sach moi",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tao sach thanh cong"
+          }
+        }
+      }
+    },
+    "/api/product/update": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Cap nhat sach theo id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cap nhat sach thanh cong"
+          }
+        }
+      }
+    },
+    "/api/product/delete": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Xoa sach theo id",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Xoa sach thanh cong"
+          }
+        }
+      }
+    },
+    "/api/history-book/create": {
+      "post": {
+        "tags": [
+          "History Books"
+        ],
+        "summary": "Tao yeu cau muon sach",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tao yeu cau thanh cong"
+          },
+          "400": {
+            "description": "Du lieu khong hop le"
+          }
+        }
+      }
+    },
+    "/api/history-book/get-history-user": {
+      "get": {
+        "tags": [
+          "History Books"
+        ],
+        "summary": "Lay lich su muon sach cua user dang nhap",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sach lich su"
+          }
+        }
+      }
+    },
+    "/api/history-book/cancel-book": {
+      "post": {
+        "tags": [
+          "History Books"
+        ],
+        "summary": "Huy yeu cau muon sach",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "idHistory"
+                ],
+                "properties": {
+                  "idHistory": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Huy thanh cong"
+          }
+        }
+      }
+    },
+    "/api/history-book/get-all-history-book": {
+      "get": {
+        "tags": [
+          "History Books"
+        ],
+        "summary": "Lay tat ca yeu cau muon sach (admin)",
+        "responses": {
+          "200": {
+            "description": "Danh sach tat ca yeu cau"
+          }
+        }
+      }
+    },
+    "/api/history-book/update-status-book": {
+      "post": {
+        "tags": [
+          "History Books"
+        ],
+        "summary": "Duyet/tu choi yeu cau muon sach",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "idHistory",
+                  "status"
+                ],
+                "properties": {
+                  "idHistory": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "success",
+                      "cancel"
+                    ]
+                  },
+                  "productId": {
+                    "type": "string"
+                  },
+                  "userId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cap nhat thanh cong"
+          }
+        }
+      }
+    },
+    "/api/history-book/delete-history-book": {
+      "post": {
+        "tags": [
+          "History Books"
+        ],
+        "summary": "Xoa yeu cau muon sach o trang thai tu choi",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "idHistory"
+                ],
+                "properties": {
+                  "idHistory": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Xoa thanh cong"
+          }
+        }
+      }
+    }
+  }
+}
