@@ -14,9 +14,27 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./docs/swagger.json');
 
+const allowedOrigins = [
+    ...(process.env.ALLOWED_ORIGINS || '')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ...(process.env.URL_CLIENT ? [process.env.URL_CLIENT.trim()] : []),
+    'http://localhost:5173',
+];
+
+const uniqueAllowedOrigins = [...new Set(allowedOrigins)];
+
 app.use(
     cors({
-        origin: process.env.URL_CLIENT,
+        origin(origin, callback) {
+            // Allow non-browser clients (no Origin header) and explicit allowed origins.
+            if (!origin || uniqueAllowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(new Error(`Not allowed by CORS: ${origin}`));
+        },
         credentials: true,
     }),
 );

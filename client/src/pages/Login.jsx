@@ -20,7 +20,7 @@ function LoginUser() {
             // Force app remount so Provider can read auth cookies and hydrate user state.
             window.location.replace('/');
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error?.response?.data?.message || 'Đăng nhập thất bại, vui lòng thử lại');
         }
 
         setLoading(false);
