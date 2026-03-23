@@ -1,6 +1,5 @@
 import Context from './Context';
 import CryptoJS from 'crypto-js';
-import Cookies from 'js-cookie';
 
 import { useEffect, useRef, useState } from 'react';
 import { requestAuth, requestRefreshToken } from '../config/request';
@@ -68,12 +67,6 @@ export function Provider({ children }) {
         let refreshIntervalId;
 
         const bootstrapAuth = async () => {
-            // Skip auth request when there is no login marker cookie.
-            if (!Cookies.get('logged')) {
-                setDataUser({});
-                return;
-            }
-
             const isAuthenticated = await fetchAuth();
             if (isAuthenticated) {
                 refreshIntervalId = setupTokenRefresh();
