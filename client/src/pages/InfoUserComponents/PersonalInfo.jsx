@@ -77,7 +77,9 @@ const PersonalInfo = ({ title = 'Thông tin cá nhân' }) => {
 
     const canRequestStudentId = !effectiveIdStudent;
     const avatarSrc = dataUser?.avatar
-        ? `${String(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/${String(dataUser.avatar).replace(/^\/+/, '')}`
+        ? String(dataUser.avatar).startsWith('http')
+            ? String(dataUser.avatar)
+            : `${String(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/${String(dataUser.avatar).replace(/^\/+/, '')}`
         : undefined;
     const userInitial =
         String(dataUser?.fullName || '')

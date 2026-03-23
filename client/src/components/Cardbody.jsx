@@ -9,6 +9,9 @@ function CardBody({ data }) {
     const [visible, setVisible] = useState(false);
     const [bookData, setBookData] = useState({});
     const productId = data?.id || data?._id;
+    const imageSrc = data?.image?.startsWith('http')
+        ? data.image
+        : `${import.meta.env.VITE_API_URL_IMAGE}/${data.image}`;
 
     const showModal = async (data) => {
         setBookData(data);
@@ -27,7 +30,7 @@ function CardBody({ data }) {
             <Link to={productId ? `/product/${productId}` : '/'}>
                 <div className="relative overflow-hidden">
                     <img
-                        src={`${import.meta.env.VITE_API_URL_IMAGE}/${data.image}`}
+                        src={imageSrc}
                         className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
                         alt={data.nameProduct}
                     />

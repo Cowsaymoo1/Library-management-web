@@ -80,6 +80,10 @@ CLIENT_SECRET="your_google_oauth_client_secret"
 REDIRECT_URI="https://developers.google.com/oauthplayground"
 REFRESH_TOKEN="your_google_oauth_refresh_token"
 
+CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name"
+CLOUDINARY_API_KEY="your_cloudinary_api_key"
+CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
+
 MONGODB_URI="your_mongodb_connection_string"
 MONGODB_PORT="27017"
 ```
@@ -137,6 +141,54 @@ cd client
 npm run build
 ```
 
+## Deploy Render + Vercel (CI/CD)
+
+### 1. Deploy backend len Render (lan dau)
+
+1. Tao Web Service moi tren Render, ket noi den repo GitHub nay.
+2. Chon Root Directory: `server`.
+3. Build Command: `npm install`.
+4. Start Command: `node src/server.js`.
+5. Them Environment Variables tren Render:
+    - `NODE_ENV=production`
+    - `PORT=10000` (hoac de Render cap)
+    - `URL_CLIENT=https://<ten-app-vercel>.vercel.app`
+    - `SECRET_CRYPTO`, `JWT_SECRET`
+    - `MONGODB_URI`
+    - `USER_EMAIL`, `CLIENT_ID`, `CLIENT_SECRET`, `REDIRECT_URI`, `REFRESH_TOKEN`
+    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+6. Sau khi tao xong service, vao Settings > Deploy Hook va tao deploy hook URL.
+
+### 2. Deploy frontend len Vercel (lan dau)
+
+1. Import repo vao Vercel.
+2. Chon Root Directory: `client`.
+3. Build command: `npm run build`, Output directory: `dist`.
+4. Them Environment Variables tren Vercel:
+    - `VITE_API_URL=https://<render-service>.onrender.com`
+    - `VITE_API_URL_IMAGE=https://<render-service>.onrender.com`
+    - `VITE_SECRET_CRYPTO=<giong SECRET_CRYPTO ben backend>`
+
+### 3. Cau hinh GitHub Secrets cho CI/CD
+
+Vao GitHub repo > Settings > Secrets and variables > Actions, tao cac secrets:
+
+- `RENDER_DEPLOY_HOOK_URL`: deploy hook URL cua Render service
+- `VERCEL_TOKEN`: token tren Vercel
+- `VERCEL_ORG_ID`: org id tren Vercel
+- `VERCEL_PROJECT_ID`: project id cua frontend tren Vercel
+
+### 4. Workflow da co san
+
+- CI: `.github/workflows/ci.yml`
+    - Build frontend
+    - Sanity-check backend (validate swagger)
+- CD: `.github/workflows/deploy.yml`
+    - Trigger Render qua deploy hook
+    - Deploy frontend production len Vercel
+
+Sau khi setup xong secrets, moi lan push vao `main` (va CI pass) se tu dong deploy.
+
 ## Mot so loi thuong gap
 
 ### 1. 401 Unauthorized o `/api/user/auth`
@@ -153,6 +205,11 @@ npm run build
 ### 3. Loi id undefined khi vao chi tiet sach
 
 - Kiem tra link den trang chi tiet dung id (`id` hoac `_id`).
+
+### 4. Upload anh loi voi Cloudinary
+
+- Kiem tra du 3 bien `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` trong `server/.env`.
+- Kiem tra API key/secret co dung voi cloud name khong.
 
 ## Ghi chu bao mat
 

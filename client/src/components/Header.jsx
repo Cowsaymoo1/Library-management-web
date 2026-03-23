@@ -193,11 +193,18 @@ function Header() {
                                                 to={`/product/${product.id}`}
                                                 className="flex items-center p-3 hover:bg-gray-100 transition-colors"
                                             >
-                                                <img
-                                                    src={`${import.meta.env.VITE_API_URL_IMAGE}/${product.image}`}
-                                                    alt={product.nameProduct}
-                                                    className="w-12 h-16 object-cover rounded-md mr-4"
-                                                />
+                                                {(() => {
+                                                    const productImageSrc = product?.image?.startsWith('http')
+                                                        ? product.image
+                                                        : `${import.meta.env.VITE_API_URL_IMAGE}/${product.image}`;
+                                                    return (
+                                                        <img
+                                                            src={productImageSrc}
+                                                            alt={product.nameProduct}
+                                                            className="w-12 h-16 object-cover rounded-md mr-4"
+                                                        />
+                                                    );
+                                                })()}
                                                 <div>
                                                     <p className="font-semibold text-gray-800">{product.nameProduct}</p>
                                                     <p className="text-sm text-gray-500">{product.publisher}</p>
@@ -286,11 +293,18 @@ function Header() {
                                                 to={`/product/${product.id}`}
                                                 className="flex items-center p-3 hover:bg-gray-100 transition-colors"
                                             >
-                                                <img
-                                                    src={`${import.meta.env.VITE_API_URL_IMAGE}/${product.image}`}
-                                                    alt={product.nameProduct}
-                                                    className="w-10 h-14 object-cover rounded-md mr-3"
-                                                />
+                                                {(() => {
+                                                    const productImageSrc = product?.image?.startsWith('http')
+                                                        ? product.image
+                                                        : `${import.meta.env.VITE_API_URL_IMAGE}/${product.image}`;
+                                                    return (
+                                                        <img
+                                                            src={productImageSrc}
+                                                            alt={product.nameProduct}
+                                                            className="w-10 h-14 object-cover rounded-md mr-3"
+                                                        />
+                                                    );
+                                                })()}
                                                 <div>
                                                     <p className="font-semibold text-gray-800 text-sm">
                                                         {product.nameProduct}

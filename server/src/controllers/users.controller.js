@@ -16,6 +16,7 @@ const CryptoJS = require('crypto-js');
 const { jwtDecode } = require('jwt-decode');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
+const { uploadImageToCloudinary } = require('../utils/cloudinaryUpload');
 
 const { setAuthCookies, clearAuthCookies } = require('../utils/authCookies');
 
@@ -113,9 +114,6 @@ class controllerUser {
 
     async logout(req, res) {
         const { id } = req.user;
-        // Note: DO NOT delete API keys on logout
-        // Deleting API keys causes token refresh to fail, leading to auto-logout
-        // Keep API keys so users can auto-refresh tokens on next app load
         clearAuthCookies(res);
 
         new OK({ message: 'Đăng xuất thành công' }).send(res);
@@ -129,8 +127,7 @@ class controllerUser {
 
         let image = '';
         if (req.file) {
-            // const result = await cloudinary.uploader.upload(req.file.path);
-            // image = result.secure_url;
+            image = await uploadImageToCloudinary(req.file.path, 'quan-ly-thu-vien/avatars');
         } else {
             image = user.avatar;
         }
@@ -141,7 +138,7 @@ class controllerUser {
         await modelUser.findByIdAndUpdate(
             id,
             { fullName, address, phone, sex, avatar: image },
-            { new: true, runValidators: true },
+            { returnDocument: 'after', runValidators: true },
         );
 
         new OK({ message: 'Cập nhật thông tin tài khoản thành cong' }).send(res);
@@ -274,7 +271,7 @@ class controllerUser {
         await modelUser.findByIdAndUpdate(
             userId,
             { fullName, phone, email, role, address },
-            { new: true, runValidators: true },
+            { returnDocument: 'after', runValidators: true },
         );
         new OK({ message: 'Cập nhật người dùng thành công' }).send(res);
     }
@@ -289,14 +286,13 @@ class controllerUser {
         if (!user) {
             throw new BadRequestError('Người dùng không tồn tại');
         }
-        await modelUser.findByIdAndUpdate(
-            id,
-            { avatar: `uploads/avatars/${file.filename}` },
-            { new: true, runValidators: true },
-        );
+
+        const avatarUrl = await uploadImageToCloudinary(file.path, 'quan-ly-thu-vien/avatars');
+
+        await modelUser.findByIdAndUpdate(id, { avatar: avatarUrl }, { returnDocument: 'after', runValidators: true });
         new OK({
             message: 'Upload thành công',
-            metadata: `uploads/avatars/${file.filename}`,
+            metadata: avatarUrl,
         }).send(res);
     }
 
@@ -331,7 +327,6 @@ class controllerUser {
             throw new BadRequestError('Người dùng không tồn tại');
         }
 
-        // '0' means request is pending; any other non-empty value means already issued.
         if (user.idStudent === '0' || (user.idStudent && user.idStudent.trim() !== '')) {
             throw new BadRequestError('Vui lòng chờ xác nhận ID sinh viên');
         }
@@ -378,7 +373,7 @@ class controllerUser {
         await modelUser.findByIdAndUpdate(
             userId,
             { idStudent: generatedIdStudent, cardStatus: 'active' },
-            { new: true, runValidators: true },
+            { returnDocument: 'after', runValidators: true },
         );
         new OK({ message: 'Xác nhận thành công', metadata: { idStudent: generatedIdStudent } }).send(res);
     }
@@ -399,7 +394,7 @@ class controllerUser {
             throw new BadRequestError('Người dùng chưa có thẻ sinh viên để cập nhật trạng thái');
         }
 
-        await modelUser.findByIdAndUpdate(userId, { cardStatus }, { new: true, runValidators: true });
+        await modelUser.findByIdAndUpdate(userId, { cardStatus }, { returnDocument: 'after', runValidators: true });
         new OK({ message: cardStatus === 'locked' ? 'Đã khóa thẻ sinh viên' : 'Đã mở khóa thẻ sinh viên' }).send(res);
     }
 
@@ -422,7 +417,7 @@ class controllerUser {
         await modelUser.findByIdAndUpdate(
             userId,
             { idStudent: null, cardStatus: 'active' },
-            { new: true, runValidators: true },
+            { returnDocument: 'after', runValidators: true },
         );
 
         new OK({ message: 'Đã xóa thẻ sinh viên' }).send(res);
@@ -446,7 +441,7 @@ class controllerUser {
         await modelUser.findByIdAndUpdate(
             userId,
             { idStudent: null, cardStatus: 'active' },
-            { new: true, runValidators: true },
+            { returnDocument: 'after', runValidators: true },
         );
         new OK({ message: 'Đã hủy yêu cầu cấp thẻ' }).send(res);
     }
@@ -488,7 +483,6 @@ class controllerUser {
             const pendingLoans = pendingRequests;
             const rejectedLoans = await HistoryBook.countDocuments({ status: 'cancel' });
 
-            // Tính toán yêu cầu quá hạn: status = 'success', returnDate is null, and borrowDate is more than 14 days ago
             const fourteenDaysAgo = new Date();
             fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
             const overdueLoans = await HistoryBook.countDocuments({

@@ -15,6 +15,9 @@ function DetailProduct() {
     const [visible, setVisible] = useState(false);
 
     const { dataUser } = useStore();
+    const imageSrc = dataProduct?.image?.startsWith('http')
+        ? dataProduct.image
+        : `${import.meta.env.VITE_API_URL_IMAGE}/${dataProduct.image || ''}`;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -62,7 +65,7 @@ function DetailProduct() {
                         <div className="flex justify-center">
                             <div className="w-full max-w-xs">
                                 <img
-                                    src={`${import.meta.env.VITE_API_URL_IMAGE}/${dataProduct.image}`}
+                                    src={imageSrc}
                                     alt={dataProduct.nameProduct}
                                     className="w-full h-auto rounded-lg shadow-md"
                                 />

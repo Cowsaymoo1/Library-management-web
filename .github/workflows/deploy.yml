@@ -1,0 +1,49 @@
+name: CD Deploy
+
+on:
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
+
+jobs:
+    deploy:
+        name: Deploy to Render and Vercel
+        runs-on: ubuntu-latest
+        if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Trigger Render deploy hook
+              shell: bash
+              run: |
+                  if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+                    echo "RENDER_DEPLOY_HOOK_URL is not set. Skipping Render deploy."
+                    exit 0
+                  fi
+
+                  curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+                  echo "Render deploy hook triggered."
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: Deploy Frontend to Vercel
+              shell: bash
+              env:
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+              run: |
+                  if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+                    echo "Vercel secrets are missing. Skipping Vercel deployment."
+                    exit 0
+                  fi
+
+                  npm install -g vercel
+                  cd client
+                  vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+                  vercel build --prod --token "$VERCEL_TOKEN"
+                  vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"

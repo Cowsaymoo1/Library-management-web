@@ -1,0 +1,54 @@
+name: CI
+
+on:
+    pull_request:
+        branches: [main]
+    push:
+        branches: [main]
+
+jobs:
+    client-build:
+        name: Client Build
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: client
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+                  cache-dependency-path: client/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build client
+              run: npm run build
+
+    server-sanity:
+        name: Server Sanity Check
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: server
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+                  cache-dependency-path: server/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Validate Swagger JSON
+              run: node -e "const s=require('./src/docs/swagger.json'); if(!s.openapi){process.exit(1)}; console.log('swagger ok')"

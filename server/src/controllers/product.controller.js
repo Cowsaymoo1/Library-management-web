@@ -2,6 +2,7 @@ const { AuthFailureError, BadRequestError } = require('../core/error.response');
 const { OK, Created } = require('../core/success.response');
 const modelProduct = require('../models/product.model');
 const mongoose = require('mongoose');
+const { uploadImageToCloudinary } = require('../utils/cloudinaryUpload');
 
 class controllerProduct {
     async uploadImage(req, res) {
@@ -9,7 +10,9 @@ class controllerProduct {
         if (!file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
-        const imageUrl = `uploads/products/${file.filename}`;
+
+        const imageUrl = await uploadImageToCloudinary(file.path, 'quan-ly-thu-vien/products');
+
         new Created({
             message: 'Upload image success',
             metadata: imageUrl,
@@ -124,7 +127,10 @@ class controllerProduct {
                 throw new BadRequestError('ID không hợp lệ');
             }
 
-            const product = await modelProduct.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+            const product = await modelProduct.findByIdAndUpdate(id, req.body, {
+                returnDocument: 'after',
+                runValidators: true,
+            });
 
             if (!product) {
                 throw new BadRequestError('Sản phẩm không tồn tại');

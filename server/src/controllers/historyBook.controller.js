@@ -53,7 +53,7 @@ class historyBookController {
                 throw new BadRequestError('Sách không tồn tại');
             }
 
-            await modelProduct.findByIdAndUpdate(bookId, { $inc: { stock: -quantity } }, { new: true });
+            await modelProduct.findByIdAndUpdate(bookId, { $inc: { stock: -quantity } }, { returnDocument: 'after' });
 
             new Created({
                 message: 'Create history book success',
@@ -100,12 +100,12 @@ class historyBookController {
                 throw new BadRequestError('Sách không tồn tại');
             }
 
-            await modelHistoryBook.findByIdAndUpdate(idHistory, { status: 'cancel' }, { new: true });
+            await modelHistoryBook.findByIdAndUpdate(idHistory, { status: 'cancel' }, { returnDocument: 'after' });
 
             await modelProduct.findByIdAndUpdate(
                 findHistory.bookId,
                 { $inc: { stock: findHistory.quantity } },
-                { new: true },
+                { returnDocument: 'after' },
             );
 
             new OK({
@@ -154,7 +154,7 @@ class historyBookController {
                 throw new BadRequestError('Sản phẩm hoặc người dùng không tồn tại');
             }
 
-            await modelHistoryBook.findByIdAndUpdate(idHistory, { status }, { new: true });
+            await modelHistoryBook.findByIdAndUpdate(idHistory, { status }, { returnDocument: 'after' });
 
             if (status === 'success') {
                 await SendMailBookBorrowConfirmation(
